@@ -24,16 +24,18 @@ app.get('/health', (_req, res) => res.status(200).send('OK'))
 
 // Auto-mount all routers placed under src/routes/auto
 const autoDir = path.join(__dirname, 'routes', 'auto')
-if (fs.existsSync(autoDir)) {
-  const files = fs.readdirSync(autoDir).filter(f => f.endsWith('.route.js'))
-  for (const f of files) {
-    const fullPath = path.join(autoDir, f)
-    // Dynamic import for ES Modules in Node.js
-    const mod = await import(pathToFileURL(fullPath).href)
-    const router = mod.default || mod
-    if (router) app.use('/', router)
+;(async () => {
+  if (fs.existsSync(autoDir)) {
+    const files = fs.readdirSync(autoDir).filter(f => f.endsWith('.route.js'))
+    for (const f of files) {
+      const fullPath = path.join(autoDir, f)
+      // Dynamic import for ES Modules in Node.js
+      const mod = await import(pathToFileURL(fullPath).href)
+      const router = mod.default || mod
+      if (router) app.use('/', router)
+    }
   }
-}
+})()
 
 // Global error middleware last
 app.use(errorHandler)
